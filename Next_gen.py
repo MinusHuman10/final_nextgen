@@ -891,18 +891,20 @@ if player_name:
     # Aplicar filtros a los resultados
     filtered_similar_players = similar_players.copy()
 
-    # Asegurar que la columna 'preferred_foot' existe en el DataFrame
+        if 'preferred_foot' in filtered_similar_players.columns:
     filtered_similar_players = filtered_similar_players[
         (filtered_similar_players['value_million_euro'].between(price_range[0], price_range[1])) &
         (filtered_similar_players['wage_million_euro'].between(wage_range[0], wage_range[1])) &
         (filtered_similar_players['age'].between(age_range[0], age_range[1])) &
-        (filtered_similar_players['height'].between(height_range[0], height_range[1])) &
-    (
-        (preferred_foot == "Izquierda" & (filtered_similar_players['preferred_foot'] == 0)) |
-        (preferred_foot == "Derecha" & (filtered_similar_players['preferred_foot'] == 1)) |
-        (preferred_foot == "Todos")
-    )
-]
+        (filtered_similar_players['height'].between(height_range[0], height_range[1]))
+    ]
+
+    # Aplicar filtro de pie preferido dentro de la misma condición
+    if preferred_foot == "Izquierda":
+        filtered_similar_players = filtered_similar_players[filtered_similar_players['preferred_foot'] == 0]
+    elif preferred_foot == "Derecha":
+        filtered_similar_players = filtered_similar_players[filtered_similar_players['preferred_foot'] == 1]
+
 
         # Filtrar por pie preferido si se selecciona izquierda o derecha
         if preferred_foot == "Izquierda":
