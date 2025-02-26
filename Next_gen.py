@@ -894,11 +894,11 @@ elif selected_page == "Recomendador":
             (df_skills['height'].between(height_range[0], height_range[1]))
         ]
 
-
         if preferred_foot == "Izquierda":
-            filtered_similar_players = filtered_similar_players[df_skills['preferred_foot'] == 0]
+            filtered_similar_players = filtered_similar_players[filtered_similar_players['preferred_foot'] == 0]
         elif preferred_foot == "Derecha":
-            filtered_similar_players = filtered_similar_players[df_skills['preferred_foot'] == 1]
+            filtered_similar_players = filtered_similar_players[filtered_similar_players['preferred_foot'] == 1]
+
 
         if filtered_similar_players.empty:
             st.warning("No hay jugadores recomendados para el rango seleccionado.")
