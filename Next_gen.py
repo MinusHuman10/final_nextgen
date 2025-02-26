@@ -884,20 +884,23 @@ elif selected_page == "Recomendador":
 
     if player_name:
         similar_players = get_similar_players(df_skills, player_name, player_skills)
+            # Asegúrate de aplicar los filtros directamente sobre df_skills
+    if preferred_foot == "Izquierda":
+        df_skills = df_skills[df_skills['preferred_foot'] == 0]
+    elif preferred_foot == "Derecha":
+        df_skills = df_skills[df_skills['preferred_foot'] == 1]
 
-        # Aplicar filtros a los resultados
-        filtered_similar_players = similar_players.copy()
-        filtered_similar_players = filtered_similar_players[
-            (df_skills['value_million_euro'].between(price_range[0], price_range[1])) &
-            (df_skills['wage_million_euro'].between(wage_range[0], wage_range[1])) &
-            (df_skills['age'].between(age_range[0], age_range[1])) &
-            (df_skills['height'].between(height_range[0], height_range[1]))
-        ]
+# Ahora, procedemos con la filtración de los jugadores similares
+filtered_similar_players = get_similar_players(df_skills, player_name, player_skills)
 
-        if preferred_foot == "Izquierda":
-            filtered_similar_players = filtered_similar_players[filtered_similar_players['preferred_foot'] == 0]
-        elif preferred_foot == "Derecha":
-            filtered_similar_players = filtered_similar_players[filtered_similar_players['preferred_foot'] == 1]
+# Aplicar filtros adicionales sobre los rangos de precio, salario, edad y altura
+filtered_similar_players = filtered_similar_players[
+    (df_skills['value_million_euro'].between(price_range[0], price_range[1])) & 
+    (df_skills['wage_million_euro'].between(wage_range[0], wage_range[1])) & 
+    (df_skills['age'].between(age_range[0], age_range[1])) & 
+    (df_skills['height'].between(height_range[0], height_range[1]))
+]
+
 
 
         if filtered_similar_players.empty:
