@@ -891,15 +891,16 @@ elif selected_page == "Recomendador":
         # Obtener jugadores similares
         similar_players = get_similar_players(df_skills, player_name, player_skills)
 
-        # Verificar si la columna 'preferred_foot' está presente
+        # Verificar si la columna 'preferred_foot' está presente en el dataframe original
         if 'preferred_foot' not in df_skills.columns:
             st.error("⚠️ Error: La columna 'preferred_foot' no está en df_skills. Verifica el DataFrame.")
         else:
             # Copia del dataframe filtrado
             filtered_similar_players = similar_players.copy()
 
-            # Aplicar filtros si las columnas existen
+            # Verificar si la columna 'preferred_foot' está presente después de obtener jugadores similares
             if 'preferred_foot' in filtered_similar_players.columns:
+                # Aplicar filtros si las columnas existen
                 filtered_similar_players = filtered_similar_players[
                     (filtered_similar_players['value_million_euro'].between(price_range[0], price_range[1])) &
                     (filtered_similar_players['wage_million_euro'].between(wage_range[0], wage_range[1])) &
@@ -948,6 +949,7 @@ elif selected_page == "Recomendador":
                     ]]
                     df_metrics = df_metrics.set_index('name').loc[filtered_similar_players['name']].reset_index()
                     st.dataframe(df_metrics)
+
 
 # ----------------------------------------
 # Pestaña: "Comparador"
