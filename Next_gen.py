@@ -842,7 +842,6 @@ elif selected_page == "Jugadores":
 # ----------------------------------------
 # Pestaña: "Recomendador"
 # ----------------------------------------
-import streamlit as st
 
 elif selected_page == "Recomendador":
     st.title("Recomendador de Jugadores")
