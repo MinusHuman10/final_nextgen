@@ -891,21 +891,18 @@ elif selected_page == "Recomendador":
         # Obtener jugadores similares
         similar_players = get_similar_players(df_skills, player_name, player_skills)
 
-        # Verificar si 'preferred_foot' está en df_skills
+        # Verificar si 'preferred_foot' está en el DataFrame original
         if 'preferred_foot' not in df_skills.columns:
-            st.error("⚠️ Error: La columna 'preferred_foot' no está en df_skills. Verifica el DataFrame.")
+            st.error("⚠️ Error: La columna 'preferred_foot' no está en df_skills. Verifica el DataFrame original.")
         else:
-            # Verificar si la columna 'preferred_foot' está en los jugadores similares
+            # Verificar si la columna 'preferred_foot' está presente en los jugadores similares
             if 'preferred_foot' in similar_players.columns:
-                # Copiar y filtrar jugadores similares
-                filtered_similar_players = similar_players.copy()
-
-                # Aplicar filtros de valores (rango de precio, salario, edad y altura)
-                filtered_similar_players = filtered_similar_players[
-                    (filtered_similar_players['value_million_euro'].between(price_range[0], price_range[1])) &
-                    (filtered_similar_players['wage_million_euro'].between(wage_range[0], wage_range[1])) &
-                    (filtered_similar_players['age'].between(age_range[0], age_range[1])) &
-                    (filtered_similar_players['height'].between(height_range[0], height_range[1]))
+                # Filtrar los jugadores similares según los rangos
+                filtered_similar_players = similar_players[
+                    (similar_players['value_million_euro'].between(price_range[0], price_range[1])) &
+                    (similar_players['wage_million_euro'].between(wage_range[0], wage_range[1])) &
+                    (similar_players['age'].between(age_range[0], age_range[1])) &
+                    (similar_players['height'].between(height_range[0], height_range[1]))
                 ]
 
                 # Filtrar según el pie preferido
@@ -948,7 +945,9 @@ elif selected_page == "Recomendador":
                         st.dataframe(df_metrics)
             
             else:
+                # Si no está presente en los jugadores similares
                 st.warning("⚠️ La columna 'preferred_foot' no está presente en los jugadores similares. Verifica la salida de 'get_similar_players()'.")
+
 
 
 # ----------------------------------------
