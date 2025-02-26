@@ -883,29 +883,29 @@ elif selected_page == "Recomendador":
     player_name = st.selectbox("Seleccione un jugador", [""] + list(df_skills['name'].unique()), index=0)
 
     if player_name:
+        # Filtrar jugadores según el pie preferido
+        if preferred_foot == "Izquierda":
+            df_skills = df_skills[df_skills['preferred_foot'] == 0]
+        elif preferred_foot == "Derecha":
+            df_skills = df_skills[df_skills['preferred_foot'] == 1]
+
+        # Obtener jugadores similares
         similar_players = get_similar_players(df_skills, player_name, player_skills)
-            # Asegúrate de aplicar los filtros directamente sobre df_skills
-    if preferred_foot == "Izquierda":
-        df_skills = df_skills[df_skills['preferred_foot'] == 0]
-    elif preferred_foot == "Derecha":
-        df_skills = df_skills[df_skills['preferred_foot'] == 1]
 
-# Ahora, procedemos con la filtración de los jugadores similares
-filtered_similar_players = get_similar_players(df_skills, player_name, player_skills)
+        # Aplicar filtros a los resultados
+        filtered_similar_players = similar_players.copy()
+        filtered_similar_players = filtered_similar_players[
+            (df_skills['value_million_euro'].between(price_range[0], price_range[1])) &
+            (df_skills['wage_million_euro'].between(wage_range[0], wage_range[1])) &
+            (df_skills['age'].between(age_range[0], age_range[1])) &
+            (df_skills['height'].between(height_range[0], height_range[1]))
+        ]
 
-# Aplicar filtros adicionales sobre los rangos de precio, salario, edad y altura
-filtered_similar_players = filtered_similar_players[
-    (df_skills['value_million_euro'].between(price_range[0], price_range[1])) & 
-    (df_skills['wage_million_euro'].between(wage_range[0], wage_range[1])) & 
-    (df_skills['age'].between(age_range[0], age_range[1])) & 
-    (df_skills['height'].between(height_range[0], height_range[1]))
-]
-
-
-
+        # Si no hay jugadores recomendados
         if filtered_similar_players.empty:
             st.warning("No hay jugadores recomendados para el rango seleccionado.")
         else:
+            # Mostrar los 3 mejores jugadores
             top_3 = filtered_similar_players.head(min(3, len(filtered_similar_players)))
             cols = st.columns(len(top_3))
             medal_icons = ["🥇", "🥈", "🥉"]
