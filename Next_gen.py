@@ -900,11 +900,16 @@ elif selected_page == "Recomendador":
                 (filtered_similar_players['height'].between(height_range[0], height_range[1]))
             ]
 
-            # Filtrar por pie preferido
-            if preferred_foot == "Izquierda":
-                filtered_similar_players = filtered_similar_players[filtered_similar_players['preferred_foot'] == 0]
-            elif preferred_foot == "Derecha":
-                filtered_similar_players = filtered_similar_players[filtered_similar_players['preferred_foot'] == 1]
+            # Verificar que la columna existe antes de filtrar
+            if 'preferred_foot' not in df_skills.columns:
+                st.error("⚠️ Error: La columna 'preferred_foot' no está en df_skills. Verifica el DataFrame.")
+            else:
+                # Aplicar filtro de pie preferido dentro de la misma condición
+                if preferred_foot == "Izquierda":
+                    filtered_similar_players = filtered_similar_players[filtered_similar_players['preferred_foot'] == 0]
+                elif preferred_foot == "Derecha":
+                    filtered_similar_players = filtered_similar_players[filtered_similar_players['preferred_foot'] == 1]
+
 
         else:
             st.warning("⚠️ La columna 'preferred_foot' no está en los datos.")
