@@ -888,17 +888,17 @@ elif selected_page == "Recomendador":
         # Aplicar filtros a los resultados
         filtered_similar_players = similar_players.copy()
         filtered_similar_players = filtered_similar_players[
-            (df_skills['value_million_euro'].between(price_range[0], price_range[1])) &
-            (df_skills['wage_million_euro'].between(wage_range[0], wage_range[1])) &
-            (df_skills['age'].between(age_range[0], age_range[1])) &
-            (df_skills['height'].between(height_range[0], height_range[1]))
+            (filtered_similar_players['value_million_euro'].between(price_range[0], price_range[1])) &
+            (filtered_similar_players['wage_million_euro'].between(wage_range[0], wage_range[1])) &
+            (filtered_similar_players['age'].between(age_range[0], age_range[1])) &
+            (filtered_similar_players['height'].between(height_range[0], height_range[1]))
         ]
 
         # Filtros de pie preferido
         if preferred_foot == "Izquierda":
-            filtered_similar_players = filtered_similar_players[df_skills['preferred_foot'] == "Izquierda"]
+            filtered_similar_players = filtered_similar_players[filtered_similar_players['preferred_foot'] == "Izquierda"]
         elif preferred_foot == "Derecha":
-            filtered_similar_players = filtered_similar_players[df_skills['preferred_foot'] == "Derecha"]
+            filtered_similar_players = filtered_similar_players[filtered_similar_players['preferred_foot'] == "Derecha"]
 
         if filtered_similar_players.empty:
             st.warning("No hay jugadores recomendados para el rango seleccionado.")
@@ -928,7 +928,6 @@ elif selected_page == "Recomendador":
             ]]
             df_metrics = df_metrics.set_index('name').loc[filtered_similar_players['name']].reset_index()
             st.dataframe(df_metrics)
-
 
 
 # ----------------------------------------
