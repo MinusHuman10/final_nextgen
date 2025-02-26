@@ -879,42 +879,55 @@ elif selected_page == "Recomendador":
 
     st.markdown("<hr>", unsafe_allow_html=True)
 
-    st.title("Búsqueda de Jugador")
-    player_name = st.selectbox("Seleccione un jugador", [""] + list(df_skills['name'].unique()), index=0)
+st.title("Búsqueda de Jugador")
 
-    if player_name:
-        similar_players = get_similar_players(df_skills, player_name, player_skills)
+# Selector del jugador
+player_name = st.selectbox("Seleccione un jugador", [""] + list(df_skills['name'].unique()), index=0)
 
-        # Aplicar filtros a los resultados
-        filtered_similar_players = similar_players.copy()
+# Selector del pie preferido
+preferred_foot = st.radio("Pie Preferido", ['Todos', 'Izquierda', 'Derecha'])
+
+if player_name:
+    # Obtener jugadores similares
+    similar_players = get_similar_players(df_skills, player_name, player_skills)
+
+    # Aplicar filtros a los resultados
+    filtered_similar_players = similar_players.copy()
+
+    # Asegurar que la columna 'preferred_foot' existe en el DataFrame
+    if 'preferred_foot' in filtered_similar_players.columns:
+        # Filtrado por precio, salario, edad y altura
         filtered_similar_players = filtered_similar_players[
-            (df_skills['value_million_euro'].between(price_range[0], price_range[1])) &
-            (df_skills['wage_million_euro'].between(wage_range[0], wage_range[1])) &
-            (df_skills['age'].between(age_range[0], age_range[1])) &
-            (df_skills['height'].between(height_range[0], height_range[1]))
+            (filtered_similar_players['value_million_euro'].between(price_range[0], price_range[1])) &
+            (filtered_similar_players['wage_million_euro'].between(wage_range[0], wage_range[1])) &
+            (filtered_similar_players['age'].between(age_range[0], age_range[1])) &
+            (filtered_similar_players['height'].between(height_range[0], height_range[1]))
         ]
 
-
+        # Filtrar por pie preferido si se selecciona izquierda o derecha
         if preferred_foot == "Izquierda":
             filtered_similar_players = filtered_similar_players[filtered_similar_players['preferred_foot'] == 0]
         elif preferred_foot == "Derecha":
             filtered_similar_players = filtered_similar_players[filtered_similar_players['preferred_foot'] == 1]
+    else:
+        st.warning("⚠️ La columna 'preferred_foot' no está en los datos.")
 
-        if filtered_similar_players.empty:
-            st.warning("No hay jugadores recomendados para el rango seleccionado.")
-        else:
-            top_3 = filtered_similar_players.head(min(3, len(filtered_similar_players)))
-            cols = st.columns(len(top_3))
-            medal_icons = ["🥇", "🥈", "🥉"]
-            for i, row in enumerate(top_3.itertuples()):
-                with cols[i]:
-                    st.markdown(
-                        f"<div style='text-align: center; font-size: 20px; border-top: 4px solid orange;"
-                        f"border-bottom: 4px solid orange;'>"
-                        f"<h3>Top {i+1} {medal_icons[i]}</h3><h4>{row.name}</h4>"
-                        f"<p style='font-size: 22px;'>{row.Similarity}%</p></div>",
-                        unsafe_allow_html=True
-                    )
+    # Mostrar los resultados
+    if filtered_similar_players.empty:
+        st.warning("No hay jugadores recomendados para el rango seleccionado.")
+    else:
+        top_3 = filtered_similar_players.head(min(3, len(filtered_similar_players)))
+        cols = st.columns(len(top_3))
+        medal_icons = ["🥇", "🥈", "🥉"]
+        for i, row in enumerate(top_3.itertuples()):
+            with cols[i]:
+                st.markdown(
+                    f"<div style='text-align: center; font-size: 20px; border-top: 4px solid orange;"
+                    f"border-bottom: 4px solid orange;'>"
+                    f"<h3>Top {i+1} {medal_icons[i]}</h3><h4>{row.name}</h4>"
+                    f"<p style='font-size: 22px;'>{row.Similarity}%</p></div>",
+                    unsafe_allow_html=True
+                )
 
         st.write("### Tabla de Recomendaciones y Métricas Adicionales")
         cols = st.columns([1, 1.5])
