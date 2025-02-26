@@ -893,7 +893,7 @@ elif selected_page == "Recomendador":
                 # Obtener jugadores similares
                 similar_players = get_similar_players(df_skills, player_name, player_skills)
 
-                # Aplicar filtros a los resultados (primero los rangos numéricos)
+                # Aplicar los filtros a los resultados (primero los rangos numéricos)
                 filtered_similar_players = similar_players.copy()
                 filtered_similar_players = filtered_similar_players[
                     (df_skills['value_million_euro'].between(price_range[0], price_range[1])) &
