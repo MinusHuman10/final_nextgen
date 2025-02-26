@@ -884,9 +884,6 @@ elif selected_page == "Recomendador":
     # Selector del jugador
     player_name = st.selectbox("Seleccione un jugador", [""] + list(df_skills['name'].unique()), index=0)
 
-    # Filtro de pie preferido
-    preferred_foot = st.radio("Pie Preferido", ["Todos", "Izquierda", "Derecha"])
-
     if player_name:
         # Obtener jugadores similares
         similar_players = get_similar_players(df_skills, player_name, player_skills)
