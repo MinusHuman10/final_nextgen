@@ -196,12 +196,16 @@ player_skills = [
 
 # Función para obtener jugadores similares
 def get_similar_players(df_skills, player_name, features, price_range, wage_range, age_range, height_range, preferred_foot, n_clusters=4):
+    from sklearn.cluster import KMeans
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.metrics.pairwise import cosine_similarity
+
     if player_name not in df_skills['name'].values:
         raise ValueError(f"El jugador '{player_name}' no se encuentra en el dataset.")
 
     # Filtrar jugadores según los rangos seleccionados
-    filtered_df = df_skills[(
-        df_skills['value_million_euro'].between(price_range[0], price_range[1])) &
+    filtered_df = df_skills[
+        (df_skills['value_million_euro'].between(price_range[0], price_range[1])) &
         (df_skills['wage_million_euro'].between(wage_range[0], wage_range[1])) &
         (df_skills['age'].between(age_range[0], age_range[1])) &
         (df_skills['height'].between(height_range[0], height_range[1]))
@@ -211,6 +215,7 @@ def get_similar_players(df_skills, player_name, features, price_range, wage_rang
     if preferred_foot != 'Todos':
         filtered_df = filtered_df[filtered_df['preferred_foot'] == ('Izquierda' if preferred_foot == 'Izquierda' else 'Derecha')]
 
+    # Comprobación si el filtro ha devuelto jugadores
     if filtered_df.empty:
         return pd.DataFrame()  # Si no hay jugadores que coincidan con los filtros, retornar un DataFrame vacío
 
@@ -221,7 +226,11 @@ def get_similar_players(df_skills, player_name, features, price_range, wage_rang
     scaler = StandardScaler()
     scaler.fit(filtered_df[features])
 
-    player_cluster = filtered_df.loc[filtered_df['name'] == player_name, 'players_cluster'].values[0]
+    player_cluster = filtered_df.loc[filtered_df['name'] == player_name, 'players_cluster'].values
+    if player_cluster.size == 0:
+        raise ValueError(f"El jugador '{player_name}' no se encuentra en el grupo de jugadores filtrados.")
+    
+    player_cluster = player_cluster[0]
     cluster_players = filtered_df[filtered_df['players_cluster'] == player_cluster]
     cluster_X = cluster_players[features]
     cluster_X_scaled = scaler.transform(cluster_X)
@@ -236,7 +245,6 @@ def get_similar_players(df_skills, player_name, features, price_range, wage_rang
     similar_players['Similarity'] = (similar_players['Similarity'] * 100).round(2)
 
     return similar_players
-
 
 # ----------------------------------------
 # Pestaña: "Analítica"
