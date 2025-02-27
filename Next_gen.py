@@ -890,11 +890,17 @@ elif selected_page == "Recomendador":
 
         # Aplicar filtros a los resultados
         filtered_similar_players = similar_players[
-            (similar_players['value_million_euro'].between(price_range[0], price_range[1])) &
-            (similar_players['wage_million_euro'].between(wage_range[0], wage_range[1])) &
-            (similar_players['age'].between(age_range[0], age_range[1])) &
-            (similar_players['height'].between(height_range[0], height_range[1]))
-        ]
+            (similar_players['value_million_euro'].between(price_range[0], price_range[1]))]
+        st.write(filtered_similar_players.head())
+        filtered_similar_players = similar_players[
+            (similar_players['wage_million_euro'].between(wage_range[0], wage_range[1]))]
+        st.write(filtered_similar_players.head())
+        filtered_similar_players = similar_players[
+            (similar_players['age'].between(age_range[0], age_range[1]))]
+        st.write(filtered_similar_players.head())
+        filtered_similar_players = similar_players[
+            (similar_players['height'].between(height_range[0], height_range[1]))]
+        st.write(filtered_similar_players.head())
 
         # Filtrar por pierna preferida
         if preferred_foot == "Izquierda":
