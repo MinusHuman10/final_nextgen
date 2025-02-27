@@ -216,7 +216,7 @@ def get_similar_players(df_skills, player_name, features, n_clusters=4):
     similar_players = similarity_to_player.sort_values(ascending=False).drop(player_name)
 
     similar_players = similar_players.to_frame().reset_index()
-    similar_players.columns = ['name', 'Similarity']
+    similar_players.columns = ['name', 'Similarity', 'value_million_euro]
     similar_players['Similarity'] = (similar_players['Similarity'] * 100).round(2)
 
     return similar_players
