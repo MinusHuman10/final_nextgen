@@ -176,25 +176,6 @@ st.markdown("<hr>", unsafe_allow_html=True)
 # ----------------------------------------
 # Funciones y datos para Recomendador
 # ----------------------------------------
-
-# Cargar datos de jugadores
-def cargar_datos_recomendaciones():
-    return pd.read_csv(r'skills_resultado.csv')
-
-df_skills = cargar_datos_recomendaciones()
-
-# Definir las características de los jugadores
-player_skills = [
-    'overall', 'potential', 'skill_moves', 'attacking_work_rate',
-    'defensive_work_rate', 'pace_total', 'shooting_total', 'passing_total',
-    'dribbling_total', 'defending_total', 'physicality_total', 'finishing',
-    'heading_accuracy', 'dribbling', 'ball_control', 'balance', 'shot_power',
-    'strength', 'long_shots', 'aggression', 'positioning', 'vision', 'penalties',
-    'mentality', 'passing', 'speed', 'goalkeeper_diving', 'goalkeeper_handling',
-    'goalkeeper_kicking', 'goalkeeper_positioning', 'goalkeeper_reflexes'
-]
-
-# Función para obtener jugadores similares
 def get_similar_players(df_skills, player_name, features, price_range, wage_range, age_range, height_range, preferred_foot, n_clusters=4):
     from sklearn.cluster import KMeans
     from sklearn.preprocessing import StandardScaler
@@ -203,7 +184,7 @@ def get_similar_players(df_skills, player_name, features, price_range, wage_rang
     if player_name not in df_skills['name'].values:
         raise ValueError(f"El jugador '{player_name}' no se encuentra en el dataset.")
 
-    # Filtrar jugadores según los rangos seleccionados
+    # Filtrar jugadores según los rangos seleccionados, redondeando edad y altura
     filtered_df = df_skills[
         (df_skills['value_million_euro'].between(price_range[0], price_range[1])) &
         (df_skills['wage_million_euro'].between(wage_range[0], wage_range[1])) &
@@ -217,7 +198,7 @@ def get_similar_players(df_skills, player_name, features, price_range, wage_rang
 
     # Comprobación si el filtro ha devuelto jugadores
     if filtered_df.empty:
-        return pd.DataFrame()  # Si no hay jugadores que coincidan con los filtros, retornar un DataFrame vacío
+        raise ValueError("No hay jugadores que coincidan con los filtros seleccionados.")
 
     # Aplicar clustering para encontrar jugadores similares
     kmeans = KMeans(n_clusters=n_clusters, random_state=42)
@@ -226,6 +207,7 @@ def get_similar_players(df_skills, player_name, features, price_range, wage_rang
     scaler = StandardScaler()
     scaler.fit(filtered_df[features])
 
+    # Asegurar que el jugador está en el grupo filtrado
     player_cluster = filtered_df.loc[filtered_df['name'] == player_name, 'players_cluster'].values
     if player_cluster.size == 0:
         raise ValueError(f"El jugador '{player_name}' no se encuentra en el grupo de jugadores filtrados.")
@@ -245,6 +227,7 @@ def get_similar_players(df_skills, player_name, features, price_range, wage_rang
     similar_players['Similarity'] = (similar_players['Similarity'] * 100).round(2)
 
     return similar_players
+
 
 # ----------------------------------------
 # Pestaña: "Analítica"
