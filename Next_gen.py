@@ -176,6 +176,7 @@ st.markdown("<hr>", unsafe_allow_html=True)
 # ----------------------------------------
 # Funciones y datos para Recomendador
 # ----------------------------------------
+
 def get_similar_players(df_skills, player_name, features, price_range, wage_range, age_range, height_range, preferred_foot, n_clusters=4):
     from sklearn.cluster import KMeans
     from sklearn.preprocessing import StandardScaler
@@ -198,7 +199,7 @@ def get_similar_players(df_skills, player_name, features, price_range, wage_rang
 
     # Comprobación si el filtro ha devuelto jugadores
     if filtered_df.empty:
-        raise ValueError("No hay jugadores que coincidan con los filtros seleccionados.")
+        return pd.DataFrame()  # Si no hay jugadores que coincidan con los filtros, retornar un DataFrame vacío
 
     # Aplicar clustering para encontrar jugadores similares
     kmeans = KMeans(n_clusters=n_clusters, random_state=42)
@@ -227,6 +228,32 @@ def get_similar_players(df_skills, player_name, features, price_range, wage_rang
     similar_players['Similarity'] = (similar_players['Similarity'] * 100).round(2)
 
     return similar_players
+
+
+# Mostrar el formulario de recomendación solo si "Recomendador" está seleccionado
+if selected_page == "Recomendador":
+    # Filtrar jugadores según los valores seleccionados
+    player_name = st.selectbox("Seleccione un jugador", [""] + list(df_skills_filter['name'].unique()), index=0)
+
+    if player_name:
+        # Características de los jugadores
+        player_skills = [
+            'overall', 'potential', 'skill_moves', 'attacking_work_rate',
+            'defensive_work_rate', 'pace_total', 'shooting_total', 'passing_total',
+            'dribbling_total', 'defending_total', 'physicality_total', 'finishing',
+            'heading_accuracy', 'dribbling', 'ball_control', 'balance', 'shot_power',
+            'strength', 'long_shots', 'aggression', 'positioning', 'vision', 'penalties',
+            'mentality', 'passing', 'speed', 'goalkeeper_diving', 'goalkeeper_handling',
+            'goalkeeper_kicking', 'goalkeeper_positioning', 'goalkeeper_reflexes'
+        ]
+
+        # Obtener jugadores similares
+        similar_players = get_similar_players(df_skills_filter, player_name, player_skills, price_range, wage_range, age_range, height_range, preferred_foot)
+
+        if similar_players.empty:
+            st.write("No hay jugadores recomendados para el rango seleccionado.")
+        else:
+            st.write(similar_players)
 
 
 # ----------------------------------------
