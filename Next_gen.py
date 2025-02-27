@@ -883,66 +883,56 @@ elif selected_page == "Recomendador":
     player_name = st.selectbox("Seleccione un jugador", [""] + list(df_skills['name'].unique()), index=0)
 
     if player_name:
-        player_name = player_name.strip().lower()
-        df_skills['name'] = df_skills['name'].str.strip().str.lower()
+        similar_players = get_similar_players(df_skills, player_name, player_skills)
 
-        if player_name not in df_skills['name'].values:
-            st.warning(f"El jugador '{player_name}' no se encuentra en el dataset.")
+        # Debugging para verificar los datos antes del filtrado
+        st.write("Debug: Similar Players (Antes de Filtrar)", similar_players.head())
+
+        # Aplicar filtros a los resultados
+        filtered_similar_players = similar_players[
+            (similar_players['value_million_euro'].between(price_range[0], price_range[1])) &
+            (similar_players['wage_million_euro'].between(wage_range[0], wage_range[1])) &
+            (similar_players['age'].between(age_range[0], age_range[1])) &
+            (similar_players['height'].between(height_range[0], height_range[1]))
+        ]
+
+        # Filtrar por pierna preferida
+        if preferred_foot == "Izquierda":
+            filtered_similar_players = filtered_similar_players[filtered_similar_players['preferred_foot'] == 0]
+        elif preferred_foot == "Derecha":
+            filtered_similar_players = filtered_similar_players[filtered_similar_players['preferred_foot'] == 1]
+
+        # Debugging después del filtrado
+        st.write("Debug: Similar Players (Después de Filtrar)", filtered_similar_players.head())
+
+        if filtered_similar_players.empty:
+            st.warning("No hay jugadores recomendados para el rango seleccionado.")
         else:
-            try:
-                # Obtener jugadores similares
-                similar_players = get_similar_players(df_skills, player_name, player_skills)
+            top_3 = filtered_similar_players.head(min(3, len(filtered_similar_players)))
+            cols = st.columns(len(top_3))
+            medal_icons = ["🥇", "🥈", "🥉"]
+            for i, row in enumerate(top_3.itertuples()):
+                with cols[i]:
+                    st.markdown(
+                        f"<div style='text-align: center; font-size: 20px; border-top: 4px solid orange;"
+                        f"border-bottom: 4px solid orange;'>"
+                        f"<h3>Top {i+1} {medal_icons[i]}</h3><h4>{row.name}</h4>"
+                        f"<p style='font-size: 22px;'>{row.Similarity:.2f}%</p></div>",
+                        unsafe_allow_html=True
+                    )
 
-                # Aplicar los filtros a los resultados (primero los rangos numéricos)
-                filtered_similar_players = similar_players.copy()
-                filtered_similar_players = filtered_similar_players[
-                    (df_skills['value_million_euro'].between(price_range[0], price_range[1])) &
-                    (df_skills['wage_million_euro'].between(wage_range[0], wage_range[1])) &
-                    (df_skills['age'].between(age_range[0], age_range[1])) &
-                    (df_skills['height'].between(height_range[0], height_range[1]))
-                ]
-
-                # Después, filtrar según el pie preferido
-                if preferred_foot == "Izquierda":
-                    filtered_similar_players = filtered_similar_players[filtered_similar_players['preferred_foot'] == 0]
-                elif preferred_foot == "Derecha":
-                    filtered_similar_players = filtered_similar_players[filtered_similar_players['preferred_foot'] == 1]
-
-                # Si no hay jugadores recomendados
-                if filtered_similar_players.empty:
-                    st.warning("No hay jugadores recomendados para el rango seleccionado.")
-                else:
-                    # Mostrar los 3 mejores jugadores
-                    top_3 = filtered_similar_players.head(min(3, len(filtered_similar_players)))
-                    cols = st.columns(len(top_3))
-                    medal_icons = ["🥇", "🥈", "🥉"]
-                    for i, row in enumerate(top_3.itertuples()):
-                        with cols[i]:
-                            st.markdown(
-                                f"<div style='text-align: center; font-size: 20px; border-top: 4px solid orange;"
-                                f"border-bottom: 4px solid orange;'>"
-                                f"<h3>Top {i+1} {medal_icons[i]}</h3><h4>{row.name}</h4>"
-                                f"<p style='font-size: 22px;'>{row.Similarity}%</p></div>",
-                                unsafe_allow_html=True
-                            )
-
-                st.write("### Tabla de Recomendaciones y Métricas Adicionales")
-                cols = st.columns([1, 1.5])
-                with cols[0]:
-                    st.dataframe(filtered_similar_players.style.format({'Similarity': '{:.2f}%'}))
-                with cols[1]:
-                    df_metrics = df_skills[df_skills['name'].isin(filtered_similar_players['name'])][[
-                        'name', 'overall', 'potential', 'pace_total',
-                        'shooting_total', 'passing_total', 'dribbling_total',
-                        'defending_total', 'physicality_total'
-                    ]]
-                    df_metrics = df_metrics.set_index('name').loc[filtered_similar_players['name']].reset_index()
-                    st.dataframe(df_metrics)
-
-            except ValueError as e:
-                st.warning(str(e))
-
-
+        st.write("### Tabla de Recomendaciones y Métricas Adicionales")
+        cols = st.columns([1, 1.5])
+        with cols[0]:
+            st.dataframe(filtered_similar_players.style.format({'Similarity': '{:.2f}%'}))
+        with cols[1]:
+            df_metrics = df_skills[df_skills['name'].isin(filtered_similar_players['name'])][[
+                'name', 'overall', 'potential', 'pace_total',
+                'shooting_total', 'passing_total', 'dribbling_total',
+                'defending_total', 'physicality_total'
+            ]]
+            df_metrics = df_metrics.set_index('name').loc[filtered_similar_players['name']].reset_index()
+            st.dataframe(df_metrics)
 # ----------------------------------------
 # Pestaña: "Comparador"
 # ----------------------------------------
