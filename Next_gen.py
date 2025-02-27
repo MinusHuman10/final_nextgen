@@ -145,7 +145,7 @@ with st.sidebar:
         st.subheader("Filtros para Recomendador")
 
         # Cargar dataset
-        df_skills_filter = pd.read_csv(r'skills_resultado.csv') # Use a different name to avoid conflict
+        df_skills_filter = pd.read_csv(r'skills_resultado.csv')
 
         price_range = st.slider("Precio (millones de euros)",
             float(df_skills_filter['value_million_euro'].min()),
@@ -174,7 +174,7 @@ with st.sidebar:
 st.markdown("<hr>", unsafe_allow_html=True)
 
 # ----------------------------------------
-# Funciones y datos para Recomendador
+# 📌 Funciones y datos para Recomendador
 # ----------------------------------------
 def cargar_datos_recomendaciones():
     return pd.read_csv(r'skills_resultado.csv')
@@ -192,29 +192,29 @@ player_skills = [
 ]
 
 def get_similar_players(df_skills, player_name, features, n_clusters=4):
-    from sklearn.cluster import KMeans
-    from sklearn.preprocessing import StandardScaler
-    from sklearn.metrics.pairwise import cosine_similarity
-
     if player_name not in df_skills['name'].values:
         raise ValueError(f"El jugador '{player_name}' no se encuentra en el dataset.")
 
-    kmeans = KMeans(n_clusters=n_clusters, random_state=42)
+    # Aplicar KMeans para agrupar jugadores
+    kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
     df_skills['players_cluster'] = kmeans.fit_predict(df_skills[features])
 
+    # Escalar datos
     scaler = StandardScaler()
     scaler.fit(df_skills[features])
 
+    # Filtrar jugadores del mismo cluster
     player_cluster = df_skills.loc[df_skills['name'] == player_name, 'players_cluster'].values[0]
     cluster_players = df_skills[df_skills['players_cluster'] == player_cluster]
-    cluster_X = cluster_players[features]
-    cluster_X_scaled = scaler.transform(cluster_X)
+    cluster_X_scaled = scaler.transform(cluster_players[features])
 
+    # Calcular similitud coseno
     similarity_matrix = cosine_similarity(cluster_X_scaled)
     similarity_df = pd.DataFrame(similarity_matrix, index=cluster_players['name'], columns=cluster_players['name'])
     similarity_to_player = similarity_df.loc[player_name]
     similar_players = similarity_to_player.sort_values(ascending=False).drop(player_name)
 
+    # Formatear resultados
     similar_players = similar_players.to_frame().reset_index()
     similar_players.columns = ['name', 'Similarity']
     similar_players['Similarity'] = (similar_players['Similarity'] * 100).round(2)
@@ -842,68 +842,38 @@ elif selected_page == "Jugadores":
 # ----------------------------------------
 # Pestaña: "Recomendador"
 # ----------------------------------------
-elif selected_page == "Recomendador":
+if selected_page == "Recomendador":
     st.title("Recomendador de Jugadores")
-    st.markdown("""
-        <style>
-            .main, .stApp {
-                background-color: black;
-                color: white;
-            }
-            .stButton>button {
-                background-color: orange;
-                color: black;
-                font-size: 24px;
-                padding: 12px 24px;
-                border-radius: 10px;
-            }
-            .stSelectbox div[data-baseweb="select"] {
-                background-color: white !important;
-                color: black !important;
-            }
-            .stTable, table {
-                color: white !important;
-                background-color: transparent !important;
-            }
-            .sidebar .block-container {
-                background-color: #222222;
-                padding: 20px;
-                border-radius: 10px;
-            }
-            hr {
-                border: 2px solid white;
-                border-image: linear-gradient(to right, white, yellow, orange) 1;
-            }
-        </style>
-    """, unsafe_allow_html=True)
-
-    st.markdown("<hr>", unsafe_allow_html=True)
-
-    st.title("Búsqueda de Jugador")
+    
     player_name = st.selectbox("Seleccione un jugador", [""] + list(df_skills['name'].unique()), index=0)
 
     if player_name:
         similar_players = get_similar_players(df_skills, player_name, player_skills)
 
-        # Aplicar filtros a los resultados
-        filtered_similar_players = similar_players.copy()
+        # Fusionar datos para aplicar filtros correctamente
+        filtered_similar_players = df_skills[df_skills['name'].isin(similar_players['name'])].copy()
+
+        # Aplicar filtros correctamente
         filtered_similar_players = filtered_similar_players[
-            (df_skills['value_million_euro'].between(price_range[0], price_range[1])) &
-            (df_skills['wage_million_euro'].between(wage_range[0], wage_range[1])) &
-            (df_skills['age'].between(age_range[0], age_range[1])) &
-            (df_skills['height'].between(height_range[0], height_range[1]))
+            (filtered_similar_players['value_million_euro'].between(price_range[0], price_range[1])) &
+            (filtered_similar_players['wage_million_euro'].between(wage_range[0], wage_range[1])) &
+            (filtered_similar_players['age'].between(age_range[0], age_range[1])) &
+            (filtered_similar_players['height'].between(height_range[0], height_range[1]))
         ]
 
-
+        # Filtro por pie preferido
         if preferred_foot == "Izquierda":
-            filtered_similar_players = filtered_similar_players[df_skills['preferred_foot'] == 0]
+            filtered_similar_players = filtered_similar_players[filtered_similar_players['preferred_foot'] == 0]
         elif preferred_foot == "Derecha":
-            filtered_similar_players = filtered_similar_players[df_skills['preferred_foot'] == 1]
+            filtered_similar_players = filtered_similar_players[filtered_similar_players['preferred_foot'] == 1]
+
+        # Volver a unir con la similitud
+        filtered_similar_players = filtered_similar_players.merge(similar_players, on='name', how='left')
 
         if filtered_similar_players.empty:
             st.warning("No hay jugadores recomendados para el rango seleccionado.")
         else:
-            top_3 = filtered_similar_players.head(min(3, len(filtered_similar_players)))
+            top_3 = filtered_similar_players.sort_values(by="Similarity", ascending=False).head(3)
             cols = st.columns(len(top_3))
             medal_icons = ["🥇", "🥈", "🥉"]
             for i, row in enumerate(top_3.itertuples()):
@@ -916,17 +886,17 @@ elif selected_page == "Recomendador":
                         unsafe_allow_html=True
                     )
 
+        # Mostrar tabla de resultados
         st.write("### Tabla de Recomendaciones y Métricas Adicionales")
         cols = st.columns([1, 1.5])
         with cols[0]:
-            st.dataframe(filtered_similar_players.style.format({'Similarity': '{:.2f}%'}))
+            st.dataframe(filtered_similar_players[['name', 'Similarity']].style.format({'Similarity': '{:.2f}%'}))
         with cols[1]:
-            df_metrics = df_skills[df_skills['name'].isin(filtered_similar_players['name'])][[
+            df_metrics = filtered_similar_players[[
                 'name', 'overall', 'potential', 'pace_total',
                 'shooting_total', 'passing_total', 'dribbling_total',
                 'defending_total', 'physicality_total'
             ]]
-            df_metrics = df_metrics.set_index('name').loc[filtered_similar_players['name']].reset_index()
             st.dataframe(df_metrics)
 
 # ----------------------------------------
