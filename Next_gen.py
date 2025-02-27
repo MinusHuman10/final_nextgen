@@ -842,6 +842,9 @@ elif selected_page == "Jugadores":
 # ----------------------------------------
 # Pestaña: "Recomendador"
 # ----------------------------------------
+# ----------------------------------------
+# Pestaña: "Recomendador"
+# ----------------------------------------
 elif selected_page == "Recomendador":
     st.title("Recomendador de Jugadores")
     st.markdown("""
@@ -888,18 +891,13 @@ elif selected_page == "Recomendador":
         # Debugging para verificar los datos antes del filtrado
         st.write("Debug: Similar Players (Antes de Filtrar)", similar_players.head())
 
-        # Aplicar filtros a los resultados
+        # Aplicar todos los filtros de una sola vez
         filtered_similar_players = similar_players[
-            (similar_players['value_million_euro'].between(price_range[0], price_range[1]))]
-        st.write(filtered_similar_players.head())
-        filtered_similar_players = similar_players[
-            (similar_players['wage_million_euro'].between(wage_range[0], wage_range[1]))]
-        st.write(filtered_similar_players.head())
-        filtered_similar_players = similar_players[
-            (similar_players['age'].between(age_range[0], age_range[1]))]
-        st.write(filtered_similar_players.head())
-        filtered_similar_players = similar_players[
-            (similar_players['height'].between(height_range[0], height_range[1]))]
+            (similar_players['value_million_euro'].between(price_range[0], price_range[1])) &
+            (similar_players['wage_million_euro'].between(wage_range[0], wage_range[1])) &
+            (similar_players['age'].between(age_range[0], age_range[1])) &
+            (similar_players['height'].between(height_range[0], height_range[1]))
+        ]
         st.write(filtered_similar_players.head())
 
         # Filtrar por pierna preferida
@@ -920,8 +918,7 @@ elif selected_page == "Recomendador":
             for i, row in enumerate(top_3.itertuples()):
                 with cols[i]:
                     st.markdown(
-                        f"<div style='text-align: center; font-size: 20px; border-top: 4px solid orange;"
-                        f"border-bottom: 4px solid orange;'>"
+                        f"<div style='text-align: center; font-size: 20px; border-top: 4px solid orange; border-bottom: 4px solid orange;'>"
                         f"<h3>Top {i+1} {medal_icons[i]}</h3><h4>{row.name}</h4>"
                         f"<p style='font-size: 22px;'>{row.Similarity:.2f}%</p></div>",
                         unsafe_allow_html=True
@@ -939,6 +936,7 @@ elif selected_page == "Recomendador":
             ]]
             df_metrics = df_metrics.set_index('name').loc[filtered_similar_players['name']].reset_index()
             st.dataframe(df_metrics)
+
 # ----------------------------------------
 # Pestaña: "Comparador"
 # ----------------------------------------
