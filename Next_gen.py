@@ -888,7 +888,7 @@ if selected_page == "Recomendador":
 
             # Mostrar tabla de resultados
             st.write("### Tabla de Recomendaciones y Métricas Adicionales")
-            cols = st.columns([1.2, 2])
+            cols = st.columns([1.4, 1.8])
 
             with cols[0]:
                 # Formatear la columna 'Similarity' correctamente
