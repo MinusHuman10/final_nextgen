@@ -842,6 +842,7 @@ elif selected_page == "Jugadores":
 # ---------------------------------------- 
 # Pestaña: "Recomendador"
 # ----------------------------------------
+
 if selected_page == "Recomendador":
     st.title("Recomendador de Jugadores")
     
@@ -868,15 +869,23 @@ if selected_page == "Recomendador":
         elif preferred_foot == "Derecha":
             filtered_similar_players = filtered_similar_players[filtered_similar_players['preferred_foot'] == 1]
 
-        # Volver a unir con la similitud
-        filtered_similar_players = filtered_similar_players.merge(similar_players[['name', 'Similarity']], on='name', how='left')
+        # Ahora, fusionamos los jugadores similares con los datos filtrados
+        # Fusionar similitudes con los jugadores filtrados
+        filtered_similar_players = filtered_similar_players.merge(
+            similar_players[['name', 'Similarity']], 
+            on='name', 
+            how='left'
+        )
 
         if filtered_similar_players.empty:
             st.warning("No hay jugadores recomendados para el rango seleccionado.")
         else:
-            # Ordenar por similitud después de aplicar los filtros
-            top_3 = filtered_similar_players.sort_values(by="Similarity", ascending=False).head(3)
+            # Ordenar por similitud después de aplicar todos los filtros
+            filtered_similar_players = filtered_similar_players.sort_values(by="Similarity", ascending=False)
 
+            # Mostrar los 3 jugadores más similares
+            top_3 = filtered_similar_players.head(3)
+            
             cols = st.columns(len(top_3))
             medal_icons = ["🥇", "🥈", "🥉"]
             for i, row in enumerate(top_3.itertuples()):
