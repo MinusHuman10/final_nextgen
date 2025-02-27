@@ -839,7 +839,7 @@ elif selected_page == "Jugadores":
                                 st.error(f"No se pudo generar el gráfico: {str(e)}")
 
 
-# ----------------------------------------
+# ---------------------------------------- 
 # Pestaña: "Recomendador"
 # ----------------------------------------
 if selected_page == "Recomendador":
@@ -848,6 +848,7 @@ if selected_page == "Recomendador":
     player_name = st.selectbox("Seleccione un jugador", [""] + list(df_skills['name'].unique()), index=0)
 
     if player_name:
+        # Obtener jugadores similares
         similar_players = get_similar_players(df_skills, player_name, player_skills)
 
         # Fusionar datos para aplicar filtros correctamente
@@ -868,19 +869,20 @@ if selected_page == "Recomendador":
             filtered_similar_players = filtered_similar_players[filtered_similar_players['preferred_foot'] == 1]
 
         # Volver a unir con la similitud
-        filtered_similar_players = filtered_similar_players.merge(similar_players, on='name', how='left')
+        filtered_similar_players = filtered_similar_players.merge(similar_players[['name', 'Similarity']], on='name', how='left')
 
         if filtered_similar_players.empty:
             st.warning("No hay jugadores recomendados para el rango seleccionado.")
         else:
+            # Ordenar por similitud después de aplicar los filtros
             top_3 = filtered_similar_players.sort_values(by="Similarity", ascending=False).head(3)
+
             cols = st.columns(len(top_3))
             medal_icons = ["🥇", "🥈", "🥉"]
             for i, row in enumerate(top_3.itertuples()):
                 with cols[i]:
                     st.markdown(
-                        f"<div style='text-align: center; font-size: 20px; border-top: 4px solid orange;"
-                        f"border-bottom: 4px solid orange;'>"
+                        f"<div style='text-align: center; font-size: 20px; border-top: 4px solid orange; border-bottom: 4px solid orange;'>"
                         f"<h3>Top {i+1} {medal_icons[i]}</h3><h4>{row.name}</h4>"
                         f"<p style='font-size: 22px;'>{row.Similarity}%</p></div>",
                         unsafe_allow_html=True
@@ -899,16 +901,14 @@ if selected_page == "Recomendador":
                 st.data_editor(df_recommendations, hide_index=True, height=350)
 
             with cols[1]:
-                df_metrics = filtered_similar_players[[
-                    'name', 'overall', 'potential', 'pace_total',
-                    'shooting_total', 'passing_total', 'dribbling_total',
-                    'defending_total', 'physicality_total'
+                df_metrics = filtered_similar_players[[ 
+                    'name', 'overall', 'potential', 'pace_total', 
+                    'shooting_total', 'passing_total', 'dribbling_total', 
+                    'defending_total', 'physicality_total' 
                 ]]
 
                 # Mostrar tabla sin índice
                 st.data_editor(df_metrics, hide_index=True, height=350)
-
-
 
 # ----------------------------------------
 # Pestaña: "Comparador"
