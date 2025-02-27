@@ -889,15 +889,22 @@ if selected_page == "Recomendador":
         # Mostrar tabla de resultados
         st.write("### Tabla de Recomendaciones y Métricas Adicionales")
         cols = st.columns([1, 1.5])
+
         with cols[0]:
-            st.dataframe(filtered_similar_players[['name', 'Similarity']].style.format({'Similarity': '{:.2f}%'}))
+            # Formatear la columna 'Similarity' correctamente y eliminar el índice
+            df_recommendations = filtered_similar_players[['name', 'Similarity']].copy()
+            df_recommendations['Similarity'] = df_recommendations['Similarity'].apply(lambda x: f"{x:.2f}%")
+            st.dataframe(df_recommendations.set_index('name'))  # Quita el índice numérico y usa 'name' como índice
+
         with cols[1]:
             df_metrics = filtered_similar_players[[
                 'name', 'overall', 'potential', 'pace_total',
                 'shooting_total', 'passing_total', 'dribbling_total',
                 'defending_total', 'physicality_total'
-            ]]
+            ]].set_index('name')  # También quitamos el índice para esta tabla
+            
             st.dataframe(df_metrics)
+
 
 # ----------------------------------------
 # Pestaña: "Comparador"
