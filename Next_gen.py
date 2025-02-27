@@ -177,20 +177,20 @@ st.markdown("<hr>", unsafe_allow_html=True)
 # Funciones y datos para Recomendador
 # ----------------------------------------
 
-def get_similar_players(df_skills, player_name, features, price_range, wage_range, age_range, height_range, preferred_foot, n_clusters=4):
+def get_similar_players(df_skills_filter, player_name, features, price_range, wage_range, age_range, height_range, preferred_foot, n_clusters=4):
     from sklearn.cluster import KMeans
     from sklearn.preprocessing import StandardScaler
     from sklearn.metrics.pairwise import cosine_similarity
 
-    if player_name not in df_skills['name'].values:
+    if player_name not in df_skills_filter['name'].values:
         raise ValueError(f"El jugador '{player_name}' no se encuentra en el dataset.")
 
     # Filtrar jugadores según los rangos seleccionados, redondeando edad y altura
-    filtered_df = df_skills[
-        (df_skills['value_million_euro'].between(price_range[0], price_range[1])) &
-        (df_skills['wage_million_euro'].between(wage_range[0], wage_range[1])) &
-        (df_skills['age'].between(age_range[0], age_range[1])) &
-        (df_skills['height'].between(height_range[0], height_range[1]))
+    filtered_df = df_skills_filter[
+        (df_skills_filter['value_million_euro'].between(price_range[0], price_range[1])) &
+        (df_skills_filter['wage_million_euro'].between(wage_range[0], wage_range[1])) &
+        (df_skills_filter['age'].between(age_range[0], age_range[1])) &
+        (df_skills_filter['height'].between(height_range[0], height_range[1]))
     ]
 
     # Filtrar por pierna preferida
@@ -254,7 +254,6 @@ if selected_page == "Recomendador":
             st.write("No hay jugadores recomendados para el rango seleccionado.")
         else:
             st.write(similar_players)
-
 
 # ----------------------------------------
 # Pestaña: "Analítica"
