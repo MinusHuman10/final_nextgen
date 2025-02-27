@@ -886,24 +886,28 @@ if selected_page == "Recomendador":
                         unsafe_allow_html=True
                     )
 
-        # Mostrar tabla de resultados
-        st.write("### Tabla de Recomendaciones y Métricas Adicionales")
-        cols = st.columns([1, 1.5])
+            # Mostrar tabla de resultados
+            st.write("### Tabla de Recomendaciones y Métricas Adicionales")
+            cols = st.columns([1, 2])
 
-        with cols[0]:
-            # Formatear la columna 'Similarity' correctamente y eliminar el índice
-            df_recommendations = filtered_similar_players[['name', 'Similarity']].copy()
-            df_recommendations['Similarity'] = df_recommendations['Similarity'].apply(lambda x: f"{x:.2f}%")
-            st.dataframe(df_recommendations.set_index('name'))  # Quita el índice numérico y usa 'name' como índice
+            with cols[0]:
+                # Formatear la columna 'Similarity' correctamente
+                df_recommendations = filtered_similar_players[['name', 'Similarity']].copy()
+                df_recommendations['Similarity'] = df_recommendations['Similarity'].apply(lambda x: f"{x:.2f}%")
+    
+                # Mostrar la tabla sin índice
+                st.data_editor(df_recommendations, hide_index=True, height=350)
 
-        with cols[1]:
-            df_metrics = filtered_similar_players[[
-                'name', 'overall', 'potential', 'pace_total',
-                'shooting_total', 'passing_total', 'dribbling_total',
-                'defending_total', 'physicality_total'
-            ]].set_index('name')  # También quitamos el índice para esta tabla
-            
-            st.dataframe(df_metrics)
+            with cols[1]:
+                df_metrics = filtered_similar_players[[
+                    'name', 'overall', 'potential', 'pace_total',
+                    'shooting_total', 'passing_total', 'dribbling_total',
+                    'defending_total', 'physicality_total'
+                ]]
+
+                # Mostrar tabla sin índice
+                st.data_editor(df_metrics, hide_index=True, height=350)
+
 
 
 # ----------------------------------------
